@@ -6,10 +6,12 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
 	moveit_core
 	moveit_ros_planning
+	pcl_ros
 	pluginlib
 	rosconsole
 	roscpp
 	roslint
+	rtr_core_stub
 	)
 
 #find_package(Boost REQUIRED COMPONENTS system)

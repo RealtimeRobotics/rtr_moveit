@@ -20,12 +20,17 @@
   <build_depend>rosconsole</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>roslint</build_depend>
+  <build_depend>rtr_core_stub</build_depend>
+  <build_depend>pcl_ros</build_depend>
   <build_depend>pluginlib</build_depend>
 
   <exec_depend>moveit_core</exec_depend>
   <exec_depend>moveit_ros_planning</exec_depend>
   <exec_depend>roscpp</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
   <exec_depend>pluginlib</exec_depend>
+  <exec_depend>rtr_core_stub</exec_depend>
+
 
 
   <build_export_depend>moveit_core</build_export_depend>
