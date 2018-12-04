@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <test pkg="rtr_moveit" type="rtr_conversions_test" test-name="rtr_conversions_test" time-limit="300" args="">
+    <!-- <rosparam command="load" file="$(find rtr_moveit)/config/example.yaml"/> -->
+  </test>
+</launch>

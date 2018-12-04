@@ -15,6 +15,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>eigen</build_depend>
+  <build_depend>geometry_msgs</build_depend>
   <build_depend>moveit_core</build_depend>
   <build_depend>moveit_ros_planning</build_depend>
   <build_depend>rosconsole</build_depend>
@@ -23,15 +25,24 @@
   <build_depend>rtr_core_stub</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>pluginlib</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>trajectory_msgs</build_depend>
 
+
+  <exec_depend>eigen</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>moveit_core</exec_depend>
   <exec_depend>moveit_ros_planning</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>pcl_ros</exec_depend>
   <exec_depend>pluginlib</exec_depend>
   <exec_depend>rtr_core_stub</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>trajectory_msgs</exec_depend>
 
 
+  <test_depend>rostest</test_depend>
+  <test_depend>rosunit</test_depend>
 
   <build_export_depend>moveit_core</build_export_depend>
   <build_export_depend>pluginlib</build_export_depend>

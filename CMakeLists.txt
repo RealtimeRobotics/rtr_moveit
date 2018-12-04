@@ -3,7 +3,10 @@ project(rtr_moveit)
 
 add_compile_options(-std=c++11)
 
+find_package(Eigen3 REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
+	geometry_msgs
 	moveit_core
 	moveit_ros_planning
 	pcl_ros
@@ -12,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	roslint
 	rtr_core_stub
+	tf
+	trajectory_msgs
 	)
 
 #find_package(Boost REQUIRED COMPONENTS system)
@@ -40,6 +45,7 @@ set_target_properties(moveit_rtr_planner_plugin PROPERTIES VERSION ${${PROJECT_N
 target_link_libraries(moveit_rtr_planner_plugin ${catkin_LIBRARIES} rtr_planning_context)
 
 install(TARGETS moveit_rtr_planner_plugin rtr_planning_context
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(DIRECTORY include DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
@@ -47,5 +53,21 @@ install(DIRECTORY include DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 install(FILES rtr_interface_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-# Test for correct C++ source code
+
+#############
+## Testing ##
+#############
+
+if(CATKIN_ENABLE_TESTING)
+	find_package(rostest REQUIRED)
+
+	add_rostest_gtest(rtr_conversions_test test/rtr_conversions_test.test test/rtr_conversions_test.cpp)
+	target_link_libraries(rtr_conversions_test
+		${catkin_LIBRARIES}
+		${Boost_LIBRARIES}
+		)
+
+endif()
+
+# Check for correct C++ source code
 roslint_cpp()
