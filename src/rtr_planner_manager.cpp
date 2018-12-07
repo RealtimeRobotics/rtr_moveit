@@ -43,19 +43,26 @@
 #include <pluginlib/class_list_macros.hpp>
 
 #include <rtr_interface/rtr_planning_context.h>
+#include <rtr_interface/rtr_planner_interface.h>
+
+const std::string LOGNAME = "rtr_planner_manager";
 
 namespace rtr_interface
 {
 class RTRPlannerManager : public planning_interface::PlannerManager
 {
 public:
-  RTRPlannerManager() : planning_interface::PlannerManager()
+  RTRPlannerManager() : planning_interface::PlannerManager(), planner_interface_(new RTRPlannerInterface())
   {
   }
 
   virtual bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns)
   {
-    ROS_INFO_NAMED("rtr_planner_manager", "Initialized");
+    if (!planner_interface_->initialize())
+    {
+      ROS_ERROR_NAMED(LOGNAME, "RapidPlan interface could not be initialized!");
+      return false;
+    }
     return true;
   }
 
@@ -82,9 +89,14 @@ public:
   getPlanningContext(const planning_scene::PlanningSceneConstPtr& planning_scene,
                      const planning_interface::MotionPlanRequest& req, moveit_msgs::MoveItErrorCodes& error_code) const
   {
-    RTRPlanningContextPtr ptr;
-    return ptr;
+    RTRPlanningContext context("context", req.group_name, planner_interface_);
+    context.setMotionPlanRequest(req);
+    context.setPlanningScene(planning_scene);
+    return std::make_shared<RTRPlanningContext>(context);
   }
+
+private:
+  const RTRPlannerInterfacePtr planner_interface_;
 };
 }  // namespace rtr_interface
 
