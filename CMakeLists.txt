@@ -36,15 +36,19 @@ include_directories(
  ${catkin_INCLUDE_DIRS}
 )
 
+add_library(rtr_planner_interface src/rtr_planner_interface.cpp)
+set_target_properties(rtr_planner_interface PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+target_link_libraries(rtr_planner_interface ${catkin_LIBRARIES})
+
 add_library(rtr_planning_context src/rtr_planning_context.cpp)
 set_target_properties(rtr_planning_context PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
-target_link_libraries(rtr_planning_context ${catkin_LIBRARIES})
+target_link_libraries(rtr_planning_context ${catkin_LIBRARIES} rtr_planner_interface)
 
 add_library(moveit_rtr_planner_plugin src/rtr_planner_manager.cpp)
 set_target_properties(moveit_rtr_planner_plugin PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
-target_link_libraries(moveit_rtr_planner_plugin ${catkin_LIBRARIES} rtr_planning_context)
+target_link_libraries(moveit_rtr_planner_plugin ${catkin_LIBRARIES} rtr_planner_interface rtr_planning_context)
 
-install(TARGETS moveit_rtr_planner_plugin rtr_planning_context
+install(TARGETS moveit_rtr_planner_plugin rtr_planner_interface rtr_planning_context
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
