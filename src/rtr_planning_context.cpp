@@ -40,6 +40,8 @@
 
 #include <rtr_interface/rtr_planning_context.h>
 
+const std::string LOGNAME = "rtr_planning_context";
+
 namespace rtr_interface
 {
 RTRPlanningContext::RTRPlanningContext(const std::string& name, const std::string& group)
@@ -70,6 +72,8 @@ void RTRPlanningContext::clear()
 
 bool RTRPlanningContext::terminate()
 {
-  return true;
+  // RapidPlan does not support this right now
+  ROS_WARN_STREAM_NAMED(LOGNAME, "Failed to terminate the running planning attempt! RapidPlan does not support this.");
+  return false;
 }
 }  // namespace rtr_interface
