@@ -48,10 +48,14 @@ Desc: henningkayser@picknik.ai
 #include <rtrapi/PathPlanner.h>
 #include <rtrapi/HardwareInterface.h>
 
+#include <moveit/macros/class_forward.h>
 #include <moveit_msgs/RobotState.h>
 
 namespace rtr_interface
 {
+
+MOVEIT_CLASS_FORWARD(RTRPlannerInterface);
+
 struct RoadmapSpecification
 {
   std::string occupancy_file;

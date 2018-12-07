@@ -39,22 +39,17 @@
 #include <string>
 
 #include <rtr_interface/rtr_planning_context.h>
+#include <rtr_interface/rtr_planner_interface.h>
 
 const std::string LOGNAME = "rtr_planning_context";
 
 namespace rtr_interface
 {
-RTRPlanningContext::RTRPlanningContext(const std::string& name, const std::string& group)
-  : planning_interface::PlanningContext(name, group)
+RTRPlanningContext::RTRPlanningContext(const std::string& name, const std::string& group, const RTRPlannerInterfacePtr& planner_interface)
+  : planning_interface::PlanningContext(name, group), planner_interface_(planner_interface)
 {
 }
 
-//   /** \brief Set the planning scene for this context */
-//   void setPlanningScene(const planning_scene::PlanningSceneConstPtr&
-//   planning_scene);
-//
-//   /** \brief Set the planning request for this context */
-//   void setMotionPlanRequest(const MotionPlanRequest& request);
 
 bool RTRPlanningContext::solve(planning_interface::MotionPlanResponse& res)
 {
