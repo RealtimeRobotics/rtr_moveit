@@ -93,7 +93,7 @@ bool RTRPlannerInterface::isReady() const
 }
 
 bool RTRPlannerInterface::solve(const std::string& group_name, const moveit_msgs::RobotState& start_state,
-                                const geometry_msgs::Pose goal_pose, trajectory_msgs::JointTrajectory& joint_trajectory)
+                                const geometry_msgs::Pose goal_pose, robot_trajectory::RobotTrajectory& trajectory)
 {
   // probably all solve() functions should be threadsave/mutex locked
 
@@ -131,13 +131,13 @@ bool RTRPlannerInterface::solve(const std::string& group_name, const moveit_msgs
   }
 
   // create joint trajectory from solution
-  processSolutionPath(waypoints, edges, joint_trajectory);
+  processSolutionPath(waypoints, edges, trajectory);
   return true;
 }
 
 bool RTRPlannerInterface::solve(const std::string& group_name, const moveit_msgs::RobotState& start_state,
                                 const moveit_msgs::RobotState& goal_state,
-                                trajectory_msgs::JointTrajectory& joint_trajectory)
+                                robot_trajectory::RobotTrajectory& trajectory)
 {
   return false;
 }
@@ -179,7 +179,7 @@ bool RTRPlannerInterface::prepareRoadmap(const std::string& roadmap, uint16_t& r
 
 void RTRPlannerInterface::processSolutionPath(const std::deque<unsigned int>& waypoints,
                                               const std::deque<unsigned int>& edges,
-                                              trajectory_msgs::JointTrajectory& trajectory) const
+                                              robot_trajectory::RobotTrajectory& trajectory) const
 {
 }
 
