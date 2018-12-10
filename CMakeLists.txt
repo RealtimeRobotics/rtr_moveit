@@ -8,6 +8,7 @@ find_package(Eigen3 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
 	geometry_msgs
 	moveit_core
+	moveit_msgs
 	moveit_ros_planning
 	pcl_ros
 	pluginlib
@@ -24,7 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES moveit_rtr_planner_plugin
-  CATKIN_DEPENDS moveit_core pluginlib roscpp 
+  CATKIN_DEPENDS moveit_core pluginlib roscpp
 )
 
 ###########

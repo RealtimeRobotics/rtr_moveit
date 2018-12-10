@@ -52,7 +52,8 @@ MOVEIT_CLASS_FORWARD(RTRPlannerInterface);
 class RTRPlanningContext : public planning_interface::PlanningContext
 {
 public:
-  RTRPlanningContext(const std::string& name, const std::string& group, const RTRPlannerInterfacePtr& planner_interface);
+  RTRPlanningContext(const std::string& name, const std::string& group,
+                     const RTRPlannerInterfacePtr& planner_interface);
 
   virtual ~RTRPlanningContext()
   {
@@ -63,6 +64,7 @@ public:
 
   virtual void clear();
   virtual bool terminate();
+
 private:
   const RTRPlannerInterfacePtr planner_interface_;
 };
