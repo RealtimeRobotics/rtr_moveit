@@ -104,7 +104,7 @@ private:
    * @param  planning_time - the elapsed planning time
    * @return a MoveItErrorCodes message
    */
-  moveit_msgs::MoveItErrorCodes solve(robot_trajectory::RobotTrajectoryPtr& trajectory, double& planning_time);
+  moveit_msgs::MoveItErrorCodes solve(robot_trajectory::RobotTrajectoryPtr& trajectory);
 
   /** Converts the given goal Constraints vector to a vector of valid RapidPlanGoals that can be used with the
    *  RTRPlannerInterface. Failed Constraints are left out of the result vector.
@@ -164,6 +164,12 @@ private:
   void visualizePlanContext(const OccupancyData& occupancy_data, const std::deque<std::size_t>& waypoint_ids,
                             bool plan_success);
 
+  /** Log a planning event with a timestamp
+   * @param description - Specifies the logged event
+   * @param time - The saved timestamp
+   */
+  void addDetailedTime(const std::string& description, const ros::Time& time);
+
   robot_state::RobotStatePtr start_state_;
   std::vector<robot_state::RobotStatePtr> goal_states_;
 
@@ -191,7 +197,11 @@ private:
   std::string occupancy_source_;
   std::string pcl_topic_;
 
+  // planning time
+  ros::Time start_time_;
   ros::Time terminate_plan_time_;
+  bool use_detailed_times_ = false;
+  std::vector<std::pair<std::string, ros::Time>> detailed_times_;
 };
 }  // namespace rtr_moveit
 
