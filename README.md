@@ -52,7 +52,7 @@ These instructions assume you are running on Ubuntu 16.04:
 
 1. Download the required repositories and install any dependencies:
 
-        git clone git@github.com:PickNikRobotics/rtr_moveit.git
+        git clone git@github.com:RealtimeRobotics/rtr_moveit.git
         wstool init .
         wstool merge rtr_moveit/rtr_moveit.rosinstall
         wstool update
@@ -70,7 +70,7 @@ These instructions assume you are running on Ubuntu 16.04:
 
 ## Run
 
-See the [rtr_moveit tutorial](https://github.com/PickNikRobotics/rtr_moveit/blob/pr-tutorial/rtr_moveit_tutorial/rtr_moveit_tutorial.rst) on how to configure and run this plugin.
+See the [rtr_moveit tutorial](https://github.com/RealtimeRobotics/rtr_moveit/blob/master/rtr_moveit_tutorial/rtr_moveit_tutorial.rst) on how to configure and run this plugin.
 
 ## Developers: Quick update code repositories
 
