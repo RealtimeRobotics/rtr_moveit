@@ -161,5 +161,5 @@ The example above would resolve to the following roadmap paths:
   - roadmap_2: <package_B>/directory_A/roadmap_2.og
   - roadmap_3: <package_A>/directory_A/roadmap_3.og
 
-.. _rtr_planning.yaml:  https://github.com/PickNikRobotics/rtr_moveit/blob/pr-tutorial/rtr_moveit_tutorial/rtr_planning.yaml
-.. _README: https://github.com/PickNikRobotics/rtr_moveit/blob/pr-tutorial/README.md
+.. _rtr_planning.yaml:  https://github.com/RealtimeRobotics/rtr_moveit/blob/master/rtr_moveit_tutorial/rtr_planning.yaml
+.. _README: https://github.com/RealtimeRobotics/rtr_moveit/blob/master/README.md
