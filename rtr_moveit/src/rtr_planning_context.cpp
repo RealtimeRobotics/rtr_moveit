@@ -59,7 +59,6 @@
 // rtr_moveit
 #include <rtr_moveit/rtr_planning_context.h>
 #include <rtr_moveit/rtr_planner_interface.h>
-#include <rtr_moveit/occupancy_handler.h>
 #include <rtr_moveit/roadmap_search.h>
 #include <rtr_moveit/roadmap_visualization.h>
 
@@ -101,14 +100,11 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
   // prepare collision scene
   addDetailedTime("generate occupancy", ros::Time::now());
   OccupancyData occupancy_data;
-  ros::NodeHandle nh("~");
-  OccupancyHandler occupancy_handler(nh);
-  occupancy_handler.setVolumeRegion(roadmap_.volume);
   bool occupancy_success;
   if (occupancy_source_ == "POINT_CLOUD")
-    occupancy_success = occupancy_handler.fromPointCloud(pcl_topic_, occupancy_data);
+    occupancy_success = occupancy_handler_->fromPointCloud(occupancy_data, getRemainingPlanningTime());
   else
-    occupancy_success = occupancy_handler.fromPlanningScene(planning_scene_, occupancy_data);
+    occupancy_success = occupancy_handler_->fromPlanningScene(planning_scene_, occupancy_data);
   if (!occupancy_success)
     return result;
 
@@ -127,7 +123,7 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
   for (std::size_t goal_pos = 0; goal_pos < goals_.size(); goal_pos++)
   {
     // check time
-    double timeout = (terminate_plan_time_ - ros::Time::now()).toSec() * 1000;  // seconds -> milliseconds
+    double timeout = getRemainingPlanningTime() * 1000;  // seconds -> milliseconds
     if (timeout <= 0.0)
     {
       result.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
@@ -413,6 +409,8 @@ void RTRPlanningContext::configure(moveit_msgs::MoveItErrorCodes& error_code)
     return;
   }
 
+  occupancy_handler_->setVolumeRegion(roadmap_.volume);
+
   // done
   error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
   configured_ = true;
@@ -541,6 +539,16 @@ void RTRPlanningContext::addDetailedTime(const std::string& description, const r
 {
   if (use_detailed_times_)
     detailed_times_.push_back(std::make_pair(description, time));
+}
+
+double RTRPlanningContext::getRemainingPlanningTime()
+{
+  return (terminate_plan_time_ - ros::Time::now()).toSec();
+}
+
+void RTRPlanningContext::setOccupancyHandler(std::shared_ptr<OccupancyHandler> occupancy_handler)
+{
+  occupancy_handler_ = occupancy_handler;
 }
 
 void RTRPlanningContext::clear()

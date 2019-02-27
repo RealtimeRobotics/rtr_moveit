@@ -53,6 +53,7 @@
 
 // RapidPlan file reader API
 #include <rtr-api/OGFileReader.hpp>
+#include <rtr_moveit/occupancy_handler.h>
 
 namespace rtr_moveit
 {
@@ -97,6 +98,8 @@ public:
 
   /** Terminate the planning context - NOTE: this is not supported */
   virtual bool terminate();
+
+  void setOccupancyHandler(std::shared_ptr<OccupancyHandler> occupancy_handler);
 
 private:
   /** Runs a planning attempt on the configured context and initializes results as RobotTrajectory and planning time
@@ -170,6 +173,9 @@ private:
    */
   void addDetailedTime(const std::string& description, const ros::Time& time);
 
+  /** Return the remaining planning time in seconds */
+  double getRemainingPlanningTime();
+
   robot_state::RobotStatePtr start_state_;
   std::vector<robot_state::RobotStatePtr> goal_states_;
 
@@ -202,6 +208,8 @@ private:
   ros::Time terminate_plan_time_;
   bool use_detailed_times_ = false;
   std::vector<std::pair<std::string, ros::Time>> detailed_times_;
+
+  std::shared_ptr<OccupancyHandler> occupancy_handler_;
 };
 }  // namespace rtr_moveit
 

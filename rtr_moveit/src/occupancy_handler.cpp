@@ -40,6 +40,8 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/transforms.h>
 #include <chrono>
+#include <exception>
+#include <stdexcept>
 
 // Eigen
 #include <Eigen/Geometry>
@@ -67,61 +69,65 @@ void OccupancyHandler::setVolumeRegion(const RoadmapVolume& roadmap_volume)
 
 void OccupancyHandler::setPointCloudTopic(const std::string& pcl_topic)
 {
-  pcl_topic_ = pcl_topic;
+  if (pcl_topic != pcl_topic_)
+  {
+    pcl_topic_ = pcl_topic;
+    pcl_sub_.shutdown();
+    pcl_sub_ = nh_.subscribe(pcl_topic_, 1, &OccupancyHandler::pclCallback, this);
+  }
 }
 
-bool OccupancyHandler::fromPointCloud(const std::string& pcl_topic, OccupancyData& occupancy_data, int timeout)
+bool OccupancyHandler::fromPointCloud(OccupancyData& occupancy_data, double timeout)
 {
-  // if point cloud is older than 100ms, get a new one
-  // TODO(RTR-59): Use planning time to determine timeouts
-  if (!shared_pcl_ptr_ || (ros::Time::now().toNSec() * 1000 - shared_pcl_ptr_->header.stamp > 100000))
+  // wait for new point cloud message
+  const auto start_time = ros::Time::now();
+  while (true)
   {
-    std::unique_lock<std::mutex> lock(pcl_mtx_);
-    ros::Subscriber pcl_sub = nh_.subscribe(pcl_topic, 1, &OccupancyHandler::pclCallback, this);
-    pcl_ready_ = false;
-    bool pcl_success = pcl_condition_.wait_for(lock, std::chrono::milliseconds(timeout), [&]() { return pcl_ready_; });
-    pcl_sub.shutdown();
-    if (!pcl_success)
+    if ((ros::Time::now() - start_time).toSec() > timeout)
     {
-      ROS_ERROR_NAMED(LOGNAME, "Waiting for point cloud data timed out");
+      ROS_WARN_STREAM_NAMED(LOGNAME, "Timeout waiting for point cloud data on topic: " << pcl_topic_);
       return false;
     }
-    if (shared_pcl_ptr_)
+    if (next_cloud_)
     {
-      tf::TransformListener tf_listener;
-      const std::string& cloud_frame = shared_pcl_ptr_->header.frame_id;
-      const std::string& volume_frame = volume_region_.pose.header.frame_id;
-      if (!tf_listener.canTransform(volume_frame, cloud_frame, ros::Time::now()) &&
-          !tf_listener.waitForTransform(volume_frame, cloud_frame, ros::Time::now(), ros::Duration(1.0)))
-      {
-        ROS_ERROR_NAMED(LOGNAME, "Unable to transform point cloud into volume region frame");
-        return false;
-      }
-      tf::StampedTransform cloud_to_volume;
-      tf_listener.lookupTransform(volume_frame, cloud_frame, ros::Time::now(), cloud_to_volume);
-      pcl_ros::transformPointCloud(*shared_pcl_ptr_, *shared_pcl_ptr_, cloud_to_volume);
+      // only use point cloud if it's younger than 100ms, otherwise wait for a new one
+      ros::Time pcl_stamp;
+      pcl_conversions::fromPCL(next_cloud_->header.stamp, pcl_stamp);
+      if ((start_time - pcl_stamp).toNSec() > (100 * 1e+6))
+        ROS_WARN_THROTTLE_NAMED(10, LOGNAME, "Point cloud data is too far in the past");
+      else
+        break;  // success
     }
-
-    // get result
-    occupancy_data.type = OccupancyData::Type::POINT_CLOUD;
-    occupancy_data.point_cloud = shared_pcl_ptr_;
   }
+
+  // convert cloud to pcl::PointCloud
+  pcl::PCLPointCloud2ConstPtr cloud_pcl2 = next_cloud_;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
+  pcl::fromPCLPointCloud2(*cloud_pcl2, *cloud);
+  // lookup cloud_to_volume transform
+  tf::StampedTransform cloud_to_volume;
+  try
+  {
+    tf_listener_.lookupTransform(volume_region_.pose.header.frame_id, cloud->header.frame_id, ros::Time(0),
+                                 cloud_to_volume);
+  }
+  catch (const tf2::TransformException& e)
+  {
+    ROS_ERROR_STREAM_NAMED(LOGNAME, "Exception when trying to to lookup transform: " << e.what());
+    return false;
+  }
+  // transform cloud to volume frame
+  pcl_ros::transformPointCloud(*cloud, *cloud, cloud_to_volume);
+  occupancy_data.point_cloud = cloud;
+
+  // get result
+  occupancy_data.type = OccupancyData::Type::POINT_CLOUD;
   return occupancy_data.point_cloud != NULL;
 }
 
 void OccupancyHandler::pclCallback(const pcl::PCLPointCloud2ConstPtr& cloud_pcl2)
 {
-  std::unique_lock<std::mutex> lock(pcl_mtx_);
-  // prevent overwriting shared_pcl_ptr_ in case subscriber wasn't shut down fast enough
-  if (!pcl_ready_)
-  {
-    if (!shared_pcl_ptr_)
-      shared_pcl_ptr_.reset(new pcl::PointCloud<pcl::PointXYZ>());
-    pcl::fromPCLPointCloud2(*cloud_pcl2, *shared_pcl_ptr_);
-    pcl_ready_ = true;
-    lock.unlock();
-    pcl_condition_.notify_one();
-  }
+  next_cloud_ = cloud_pcl2;
 }
 
 bool OccupancyHandler::fromPlanningScene(const planning_scene::PlanningSceneConstPtr& planning_scene,

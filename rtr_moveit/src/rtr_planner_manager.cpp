@@ -98,6 +98,20 @@ public:
       return false;
     }
 
+    occupancy_handler_.reset(new OccupancyHandler(nh_));
+    std::string occupancy_source;
+    nh_.param("planner_config/occupancy_source", occupancy_source, std::string("PLANNING_SCENE"));
+    if (occupancy_source == "POINT_CLOUD")
+    {
+      std::string pcl_topic;
+      if (!nh_.getParam("planner_config/pcl_topic", pcl_topic))
+      {
+        ROS_ERROR_NAMED(LOGNAME, "Occupancy source 'POINT_CLOUD' cannot be configured without parameter 'pcl_topic'");
+        return false;
+      }
+      occupancy_handler_->setPointCloudTopic(pcl_topic);
+    }
+
     // set default planner ids
     for (const std::pair<std::string, GroupConfig>& group_configs_item : group_configs_)
       nh_.setParam("/move_group/" + group_configs_item.first + "/default_planner_config", ROADMAP_DEFAULT);
@@ -295,6 +309,7 @@ public:
             new RTRPlanningContext(req.group_name, roadmap_search->second, planner_interface_, visualization_));
         context->setMotionPlanRequest(req);
         context->setPlanningScene(planning_scene);
+        context->setOccupancyHandler(occupancy_handler_);
         context->configure(error_code);
       }
       else
@@ -321,6 +336,7 @@ private:
   std::vector<std::string> group_names_;
   std::map<std::string, GroupConfig> group_configs_;
   std::map<std::string, RoadmapSpecification> roadmaps_;
+  std::shared_ptr<OccupancyHandler> occupancy_handler_;
 };
 }  // namespace rtr_moveit
 

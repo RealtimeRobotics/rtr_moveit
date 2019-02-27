@@ -40,8 +40,7 @@
 #define RTR_MOVEIT_OCCUPANCY_HANDLER_H
 
 // C++ synchronization
-#include <mutex>
-#include <condition_variable>
+#include <tf/transform_listener.h>
 
 // PCL
 #include <pcl/pcl_base.h>
@@ -71,12 +70,11 @@ public:
   void setPointCloudTopic(const std::string& pcl_topic);
 
   /* @brief Initializes occupancy_data with a new point cloud
-   * @param  point_cloud - the point cloud topic to use
    * @param  occupancy_data  - the result data including the point cloud
-   * @param  timeout - message timeout in milliseconds
+   * @param  timeout - timeout in seconds
    * @return true on success
    */
-  bool fromPointCloud(const std::string& point_cloud, OccupancyData& occupancy_data, int timeout = 1000);
+  bool fromPointCloud(OccupancyData& occupancy_data, double timeout = 1.0);
 
   /* @brief Generates a list of occupancy voxels given a planning scene
    * @param  planning_scene  - the planning scene
@@ -96,10 +94,10 @@ private:
   std::string pcl_topic_;
 
   // PCL synchronization
-  pcl::PointCloud<pcl::PointXYZ>::Ptr shared_pcl_ptr_;
-  std::mutex pcl_mtx_;
-  std::condition_variable pcl_condition_;
+  pcl::PCLPointCloud2ConstPtr next_cloud_;
   bool pcl_ready_ = false;
+  ros::Subscriber pcl_sub_;
+  tf::TransformListener tf_listener_;
 };
 }  // namespace rtr_moveit
 
