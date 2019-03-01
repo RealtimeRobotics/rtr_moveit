@@ -61,6 +61,7 @@
 #include <rtr_moveit/rtr_planner_interface.h>
 #include <rtr_moveit/occupancy_handler.h>
 #include <rtr_moveit/roadmap_search.h>
+#include <rtr_moveit/roadmap_visualization.h>
 
 // RapidPlan
 #include <rtr-api/OGFileReader.hpp>
@@ -69,10 +70,12 @@ namespace rtr_moveit
 {
 static const std::string LOGNAME = "rtr_planning_context";
 RTRPlanningContext::RTRPlanningContext(const std::string& planning_group, const RoadmapSpecification& roadmap_spec,
-                                       const RTRPlannerInterfacePtr& planner_interface)
+                                       const RTRPlannerInterfacePtr& planner_interface,
+                                       const RoadmapVisualizationPtr& visualization)
   : planning_interface::PlanningContext(planning_group + "[" + roadmap_spec.roadmap_id + "]", planning_group)
   , planner_interface_(planner_interface)
   , roadmap_(roadmap_spec)
+  , visualization_(visualization)
 {
 }
 
@@ -98,8 +101,8 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
   // prepare collision scene
   bool occupancy_success;
   OccupancyData occupancy_data;
-  OccupancyHandler occupancy_handler;
-  occupancy_handler.setVisualizationEnabled(visualization_enabled_);
+  ros::NodeHandle nh("~");
+  OccupancyHandler occupancy_handler(nh);
   occupancy_handler.setVolumeRegion(roadmap_.volume);
   if (occupancy_source_ == "POINT_CLOUD")
     occupancy_success = occupancy_handler.fromPointCloud(pcl_topic_, occupancy_data);
@@ -114,8 +117,10 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
     return result;
 
   // Iterate goals and plan until we have a solution
-  std::vector<rtr::Config> solution_path;
   result.val = result.PLANNING_FAILED;
+  std::vector<rtr::Config> states;
+  std::deque<std::size_t> waypoints;
+  std::deque<std::size_t> edges;
   for (std::size_t goal_pos = 0; goal_pos < goals_.size(); goal_pos++)
   {
     // check time
@@ -128,13 +133,21 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
 
     // run plan
     const RapidPlanGoal& goal = goals_[goal_pos];
-    if (planner_interface_->solve(roadmap_, start_state_id, goal, occupancy_data, timeout, solution_path))
+    states.clear();
+    waypoints.clear();
+    edges.clear();
+    if (planner_interface_->solve(roadmap_, start_state_id, goal, occupancy_data, timeout, states, waypoints, edges))
     {
-      if (solution_path.empty())
+      if (waypoints.empty())
       {
         ROS_WARN_NAMED(LOGNAME, "Cannot convert empty path to robot trajectory");
         continue;
       }
+
+      // fill solution path
+      std::vector<rtr::Config> solution_path;
+      for (std::size_t waypoint : waypoints)
+        solution_path.push_back(roadmap_configs_[waypoint]);
 
       // convert solution path to robot trajectory
       const robot_state::RobotState& reference_state = planning_scene_->getCurrentState();
@@ -162,10 +175,61 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
       result.val = result.SUCCESS;
       break;
     }
-    solution_path.clear();
   }
+  if (visualization_enabled_)
+    visualizePlannerData(occupancy_data, waypoints, result.val == result.SUCCESS);
+
   planning_time = (ros::Time::now() - start_time).toSec();
   return result;
+}
+
+void RTRPlanningContext::visualizePlannerData(const OccupancyData& occupancy_data,
+                                              const std::deque<std::size_t>& waypoint_ids, bool plan_success)
+{
+  // visualize volume region
+  visualization_->visualizeVolumeRegion(roadmap_.volume);
+
+  // visualize voxels
+  // TODO(henningkayser): visualize all kinds of occupancy data
+  if (occupancy_data.type == OccupancyData::Type::VOXELS)
+    visualization_->visualizeOccupancy(roadmap_.volume, occupancy_data);
+
+  // visualize roadmap states
+  std::vector<geometry_msgs::Point> poses(roadmap_poses_.size());
+  for (std::size_t i = 0; i < roadmap_poses_.size(); ++i)
+  {
+    poses[i].x = roadmap_poses_[i][0];
+    poses[i].y = roadmap_poses_[i][1];
+    poses[i].z = roadmap_poses_[i][2];
+  }
+
+  // visualize roadmap edges
+  std::vector<geometry_msgs::Point> edges(2 * roadmap_edges_.size());
+  for (std::size_t i = 0; i < roadmap_edges_.size(); ++i)
+  {
+    edges[2 * i].x = roadmap_poses_[roadmap_edges_[i].start_index][0];
+    edges[2 * i].y = roadmap_poses_[roadmap_edges_[i].start_index][1];
+    edges[2 * i].z = roadmap_poses_[roadmap_edges_[i].start_index][2];
+    edges[2 * i + 1].x = roadmap_poses_[roadmap_edges_[i].end_index][0];
+    edges[2 * i + 1].y = roadmap_poses_[roadmap_edges_[i].end_index][1];
+    edges[2 * i + 1].z = roadmap_poses_[roadmap_edges_[i].end_index][2];
+  }
+  geometry_msgs::Pose pose;
+  pose.orientation.w = 1.0;
+  visualization_->visualizeRoadmap(roadmap_.base_link_frame, pose, poses, edges);
+
+  // visualize solution
+  if (plan_success)
+  {
+    std::vector<geometry_msgs::Point> solution_poses(waypoint_ids.size());
+    for (std::size_t i = 0; i < waypoint_ids.size(); ++i)
+    {
+      solution_poses[i].x = roadmap_poses_[waypoint_ids[i]][0];
+      solution_poses[i].y = roadmap_poses_[waypoint_ids[i]][1];
+      solution_poses[i].z = roadmap_poses_[waypoint_ids[i]][2];
+    }
+    visualization_->visualizeSolutionPath(roadmap_.base_link_frame, pose, solution_poses);
+  }
 }
 
 bool RTRPlanningContext::solve(planning_interface::MotionPlanResponse& res)
@@ -306,6 +370,13 @@ void RTRPlanningContext::configure(moveit_msgs::MoveItErrorCodes& error_code)
     return;
   }
 
+  // get roadmap edges
+  if (!og_file_->GetEdges(roadmap_edges_) || roadmap_edges_.empty())
+  {
+    ROS_ERROR_NAMED(LOGNAME, "Unable to load state edges from roadmap file");
+    return;
+  }
+
   // load occupancy region volume
   rtr::ToolPose volume_center_pose;
   if (!og_file_->GetVoxelRegion(roadmap_.volume.pose.header.frame_id, volume_center_pose, roadmap_.volume.dimension))
@@ -318,8 +389,18 @@ void RTRPlanningContext::configure(moveit_msgs::MoveItErrorCodes& error_code)
   roadmap_.volume.pose.pose.position.z = volume_center_pose[2];
   roadmap_.volume.pose.pose.orientation =
       tf::createQuaternionMsgFromRollPitchYaw(volume_center_pose[3], volume_center_pose[4], volume_center_pose[5]);
-  roadmap_.volume.pose.header.frame_id = "world";     // NOTE: GetVoxelRegion returns an empty frame - we fix this here
-  roadmap_.volume.voxel_resolution = { 64, 64, 64 };  // NOTE: these are the hardcoded/fixed values from the rtr-toolkit
+  roadmap_.volume.pose.header.frame_id = "world";  // NOTE: GetVoxelRegion returns an empty frame - we fix this here
+  if (!og_file_->GetResolution(roadmap_.volume.voxel_resolution))
+  {
+    ROS_ERROR_NAMED(LOGNAME, "Failed to read volume voxel resolution from roadmap file");
+    return;
+  }
+  std::array<float, 6> start_link_transform;
+  if (!og_file_->GetKinematicData(start_link_transform, roadmap_.base_link_frame, roadmap_.end_effector_frame))
+  {
+    ROS_ERROR_NAMED(LOGNAME, "Failed to read kinematic data roadmap file");
+    return;
+  }
 
   // done
   error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;

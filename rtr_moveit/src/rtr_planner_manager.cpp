@@ -51,6 +51,7 @@
 // rtr_moveit
 #include <rtr_moveit/rtr_planning_context.h>
 #include <rtr_moveit/rtr_planner_interface.h>
+#include <rtr_moveit/roadmap_visualization.h>
 
 // ROS parameter loading
 #include <ros/package.h>
@@ -100,6 +101,8 @@ public:
     // set default planner ids
     for (const std::pair<std::string, GroupConfig>& group_configs_item : group_configs_)
       nh_.setParam("/move_group/" + group_configs_item.first + "/default_planner_config", ROADMAP_DEFAULT);
+
+    visualization_.reset(new RoadmapVisualization(nh_));
 
     return true;
   }
@@ -288,7 +291,8 @@ public:
       auto roadmap_search = roadmaps_.find(group_roadmap);
       if (roadmap_search != roadmaps_.end())
       {
-        context.reset(new RTRPlanningContext(req.group_name, roadmap_search->second, planner_interface_));
+        context.reset(
+            new RTRPlanningContext(req.group_name, roadmap_search->second, planner_interface_, visualization_));
         context->setMotionPlanRequest(req);
         context->setPlanningScene(planning_scene);
         context->configure(error_code);
@@ -311,6 +315,7 @@ private:
 
   // The RapidPlan wrapper interface
   RTRPlannerInterfacePtr planner_interface_;
+  RoadmapVisualizationPtr visualization_;
 
   // group and roadmap configurations
   std::vector<std::string> group_names_;

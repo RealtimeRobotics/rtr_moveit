@@ -49,12 +49,14 @@
 // rtr_moveit
 #include <rtr_moveit/rtr_planner_interface.h>
 #include <rtr_moveit/rtr_datatypes.h>
+#include <rtr_moveit/roadmap_visualization.h>
+
+// RapidPlan file reader API
 #include <rtr-api/OGFileReader.hpp>
 
 namespace rtr_moveit
 {
 MOVEIT_CLASS_FORWARD(RTRPlanningContext);
-MOVEIT_CLASS_FORWARD(RTRPlannerInterface);
 
 class RTRPlanningContext : public planning_interface::PlanningContext
 {
@@ -65,7 +67,7 @@ public:
    * @param planner_interface - The RTRPlannerInterface that handles RapidPlan collision checks and roadmap planning
    */
   RTRPlanningContext(const std::string& planning_group, const RoadmapSpecification& roadmap_spec,
-                     const RTRPlannerInterfacePtr& planner_interface);
+                     const RTRPlannerInterfacePtr& planner_interface, const RoadmapVisualizationPtr& visualization);
 
   /** Destructor */
   virtual ~RTRPlanningContext()
@@ -154,6 +156,14 @@ private:
   bool connectWaypointToTrajectory(const robot_trajectory::RobotTrajectoryPtr& trajectory,
                                    const robot_state::RobotStatePtr& waypoint_state, bool connect_to_front = false);
 
+  /** Visualizes volume region, roadmap and solution path using the RoadmapVisualization class.
+   * @param occupancy_data - The occupancy data to visualize
+   * @param waypoint_ids - The roadmap indices of the solution path
+   * @param plan_success - If set to false, the solution path is not being visualized
+   */
+  void visualizePlannerData(const OccupancyData& occupancy_data, const std::deque<std::size_t>& waypoint_ids,
+                            bool plan_success);
+
   robot_state::RobotStatePtr start_state_;
   std::vector<robot_state::RobotStatePtr> goal_states_;
 
@@ -163,6 +173,7 @@ private:
   RoadmapSpecification roadmap_;
   std::vector<rtr::Config> roadmap_configs_;
   std::vector<rtr::ToolPose> roadmap_poses_;
+  std::vector<rtr::EdgeInfo> roadmap_edges_;
   std::vector<RapidPlanGoal> goals_;
   std::shared_ptr<rtr::OGFileReader> og_file_;
   bool configured_ = false;
@@ -172,7 +183,10 @@ private:
   double allowed_joint_distance_;
   double allowed_position_distance_;
   int max_goal_states_;
+
+  // visualization
   bool visualization_enabled_;
+  const RoadmapVisualizationPtr visualization_;
 
   std::string occupancy_source_;
   std::string pcl_topic_;

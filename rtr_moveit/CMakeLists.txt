@@ -72,6 +72,7 @@ add_library(
   src/occupancy_handler.cpp
   src/rtr_planner_interface.cpp
   src/rtr_planning_context.cpp
+  src/roadmap_visualization.cpp
 )
 
 # Specify libraries to link a library or executable target against

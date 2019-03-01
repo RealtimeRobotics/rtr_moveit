@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2018, PickNik LLC
+ *  Copyright (c) 2019, PickNik LLC
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,66 +33,44 @@
  *********************************************************************/
 
 /* Author: Henning Kayser
- * Desc: Structs for roadmap and configuration data types
+ * Desc: Visualization of roadmap and planning data
  */
 
-#ifndef RTR_MOVEIT_RTR_DATATYPES_H
-#define RTR_MOVEIT_RTR_DATATYPES_H
+#ifndef RTR_MOVEIT_ROADMAP_VISUALIZATION_H
+#define RTR_MOVEIT_ROADMAP_VISUALIZATION_H
 
-#include <set>
-#include <string>
+#include <ros/ros.h>
+#include <moveit/macros/class_forward.h>
 
-#include <geometry_msgs/PoseStamped.h>
-#include <geometric_shapes/shapes.h>
-
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <rtr-occupancy/Voxel.hpp>
-#include <rtr-occupancy/Box.hpp>
+#include <visualization_msgs/Marker.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Point.h>
+#include <rtr_moveit/rtr_datatypes.h>
 
 namespace rtr_moveit
 {
-struct RoadmapVolume
+MOVEIT_CLASS_FORWARD(RoadmapVisualization);
+class RoadmapVisualization
 {
-  // the pose of the origin corner of th volume region (0,0,0)
-  geometry_msgs::PoseStamped pose;
-  // region volume dimensions along X/Y/Z axes
-  std::array<float, 3> dimension;
-  // voxel resolution along X/Y/Z axes
-  std::array<uint16_t, 3> voxel_resolution;
-};
+public:
+  RoadmapVisualization(const ros::NodeHandle& nh);
 
-struct RoadmapSpecification
-{
-  std::string roadmap_id;
-  std::string og_file;
-  RoadmapVolume volume;
+  void visualizeRoadmap(const std::string& frame_id, const geometry_msgs::Pose& marker_pose,
+                        const std::vector<geometry_msgs::Point>& state_positions,
+                        const std::vector<geometry_msgs::Point>& state_edges = {});
 
-  std::string base_link_frame;
-  std::string end_effector_frame;
-};
+  void visualizeSolutionPath(const std::string& frame_id, const geometry_msgs::Pose& marker_pose,
+                             const std::vector<geometry_msgs::Point>& waypoints);
 
-struct OccupancyData
-{
-  enum Type
-  {
-    POINT_CLOUD,
-    BOXES,
-    VOXELS
-  };
-  Type type;
-  pcl::PointCloud<pcl::PointXYZ>::ConstPtr point_cloud;
-  std::vector<rtr::Box> boxes;
-  std::vector<rtr::Voxel> voxels;
-};
+  void visualizeVolumeRegion(const RoadmapVolume& volume);
 
-// Configuration for a MoveIt! planning group
-struct GroupConfig
-{
-  std::string group_name;
-  std::string default_roadmap_id;
-  std::set<std::string> roadmap_ids;
+  void visualizeOccupancy(const RoadmapVolume& volume, const OccupancyData& occupancy_data);
+
+private:
+  ros::Publisher marker_pub_;
+  double marker_lifetime_;
+  ros::NodeHandle nh_;
 };
 }  // namespace rtr_moveit
 
-#endif  // RTR_MOVEIT_RTR_DATATYPES_H
+#endif  // RTR_MOVEIT_ROADMAP_VISUALIZATION_H

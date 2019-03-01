@@ -50,80 +50,14 @@
 #include <moveit/collision_detection_fcl/collision_world_fcl.h>
 #include <geometric_shapes/shapes.h>
 
-// visualization
-#include <visualization_msgs/Marker.h>
-
 // RapidPlan
 #include <rtr-occupancy/Voxel.hpp>
 
 namespace rtr_moveit
 {
 const std::string LOGNAME = "occupancy_handler";
-OccupancyHandler::OccupancyHandler() : nh_("")
-{
-}
-
 OccupancyHandler::OccupancyHandler(const ros::NodeHandle& nh) : nh_(nh)
 {
-}
-
-OccupancyHandler::OccupancyHandler(const ros::NodeHandle& nh, const std::string& pcl_topic)
-  : nh_(nh), pcl_topic_(pcl_topic)
-{
-}
-
-void OccupancyHandler::setVisualizationEnabled(bool enabled)
-{
-  if (enabled != visualize_occupancy_data_)
-  {
-    visualize_occupancy_data_ = enabled;
-    if (enabled)
-      volume_pub_ = nh_.advertise<visualization_msgs::Marker>("volume_region", 2);
-    else
-      volume_pub_.shutdown();
-  }
-}
-
-void OccupancyHandler::visualizeVoxels(const std::string& frame_id, const geometry_msgs::Pose& volume_origin_pose,
-                                       const geometry_msgs::Pose& volume_center_pose,
-                                       const std::array<float, 3> volume_dimensions,
-                                       const std::vector<geometry_msgs::Point>& voxel_points,
-                                       const std::array<float, 3> voxel_dimensions)
-{
-  visualization_msgs::Marker volume;
-  volume.header.frame_id = frame_id;
-  volume.header.stamp = ros::Time::now();
-  volume.id = 0;
-  volume.type = visualization_msgs::Marker::CUBE;
-  volume.scale.x = volume_dimensions[0];
-  volume.scale.y = volume_dimensions[1];
-  volume.scale.z = volume_dimensions[2];
-  volume.action = visualization_msgs::Marker::ADD;
-  volume.pose = volume_center_pose;
-  volume.color.a = 0.1;
-  volume.color.r = 1.0;
-  volume.color.g = 1.0;
-  volume.color.b = 1.0;
-  volume.lifetime = ros::Duration(5.0);
-  volume_pub_.publish(volume);
-  if (!voxel_points.empty())
-  {
-    visualization_msgs::Marker voxels;
-    voxels.header.frame_id = frame_id;
-    voxels.header.stamp = ros::Time::now();
-    voxels.id = 1;
-    voxels.type = visualization_msgs::Marker::CUBE_LIST;
-    voxels.scale.x = voxel_dimensions[0];
-    voxels.scale.y = voxel_dimensions[1];
-    voxels.scale.z = voxel_dimensions[2];
-    voxels.points = voxel_points;
-    voxels.action = visualization_msgs::Marker::ADD;
-    voxels.pose = volume_origin_pose;
-    voxels.color.a = 1.0;
-    voxels.color.r = 0.6;
-    voxels.lifetime = ros::Duration();
-    volume_pub_.publish(voxels);
-  }
 }
 
 void OccupancyHandler::setVolumeRegion(const RoadmapVolume& roadmap_volume)
@@ -224,8 +158,7 @@ bool OccupancyHandler::fromPlanningScene(const planning_scene::PlanningSceneCons
   // occupancy box id and dimensions
   // TODO(henningkayser): Check that box id is not present in planning scene - should be unique
   std::string box_id = "rapidplan_collision_box";
-  const collision_detection::WorldPtr& world_geometry = world.getWorld();
-  world_geometry->addToObject(box_id, std::make_shared<const shapes::Box>(box), world_to_volume * box_start_position);
+  world.getWorld()->addToObject(box_id, std::make_shared<const shapes::Box>(box), world_to_volume * box_start_position);
 
   // clear scene boxes vector
   occupancy_data.type = OccupancyData::Type::VOXELS;
@@ -252,13 +185,13 @@ bool OccupancyHandler::fromPlanningScene(const planning_scene::PlanningSceneCons
   collision_detection::CollisionResult result;
   for (uint16_t x = 0; x < x_voxels; ++x)
   {
-    world_geometry->moveObject(box_id, x_step);
+    world.getWorld()->moveObject(box_id, x_step);
     for (uint16_t y = 0; y < y_voxels; ++y)
     {
-      world_geometry->moveObject(box_id, y_step);
+      world.getWorld()->moveObject(box_id, y_step);
       for (uint16_t z = 0; z < z_voxels; ++z)
       {
-        world_geometry->moveObject(box_id, z_step);
+        world.getWorld()->moveObject(box_id, z_step);
         planning_scene->getCollisionWorld()->checkWorldCollision(request, result, world);
         if (result.collision)
         {
@@ -267,27 +200,10 @@ bool OccupancyHandler::fromPlanningScene(const planning_scene::PlanningSceneCons
         }
       }
       // move object back to z start
-      world_geometry->moveObject(box_id, z_reset);
+      world.getWorld()->moveObject(box_id, z_reset);
     }
     // move object back to y start
-    world_geometry->moveObject(box_id, y_reset);
-  }
-  // visualize
-  if (visualize_occupancy_data_)
-  {
-    geometry_msgs::Pose volume_center_pose;
-    tf::poseEigenToMsg(world_to_volume * Eigen::Translation3d(x_length / 2, y_length / 2, z_length / 2),
-                       volume_center_pose);
-    std::vector<geometry_msgs::Point> voxel_points(occupancy_data.voxels.size());
-    for (std::size_t i = 0; i < voxel_points.size(); i++)
-    {
-      voxel_points[i].x = occupancy_data.voxels[i].x * x_voxel_dimension;
-      voxel_points[i].y = occupancy_data.voxels[i].y * y_voxel_dimension;
-      voxel_points[i].z = occupancy_data.voxels[i].z * z_voxel_dimension;
-    }
-    visualizeVoxels(volume_region_.pose.header.frame_id, volume_region_.pose.pose, volume_center_pose,
-                    { x_length, y_length, z_length }, voxel_points,
-                    { x_voxel_dimension, y_voxel_dimension, z_voxel_dimension });
+    world.getWorld()->moveObject(box_id, y_reset);
   }
   return true;
 }
