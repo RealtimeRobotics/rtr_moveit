@@ -42,7 +42,8 @@ Occupancy data type and point cloud topics are configured using the parameters `
 Visualization
 ^^^^^^^^^^^^^
 
-The currently loaded roadmap, volume region, solution path and collisions can be visualized by setting ``enable_visualization`` to *'true'*.
+The planner data visualization can be configured with following parameters under the ``planner_config`` namespace. All markers are published to the same marker topic which can be defined in parameter ``visualization_marker_topic``. The default topic is "/rapidplan_visualization_markers".
+The marker lifetime is configured by setting ``visualization_marker_lifetime`` to the desired duration in seconds. Default is 0.0 which corresponds to infinite lifetime. Enabling / disabling visualization markers is possible by setting ``visualization_enabled`` to ``true`` / ``false``.
 
 .. _Modify:
 
@@ -107,11 +108,16 @@ Planner parameters are defined under the namespace ``move_group/planner_config``
 
 **max_goal_states** (int) - The maximum number of roadmap states to sample from goal constraints for planning.
 
-**visualization_enabled** (bool, default=false) - Toggles visualization of roadmap and solutions in RViz.
-
 **occupancy_source** (string, default= `"PLANNING_SCENE"`) - Sets the type of occupancy data to use, either `"PLANNING_SCENE"` or `"POINT_CLOUD"`.
 
 **pcl_topic** (string) - If ``occupancy_source`` is set to `"POINT_CLOUD"` this is the ROS topic to subscribe for sensor data.
+
+**visualization_enabled** (bool, default=false) - Toggles visualization of roadmap and solutions in RViz.
+
+**visualization_marker_topic** (string, default=/rapidplan_visualization_markers) - The visualization marker topic.
+
+**visualization_marker_lifetime** (float, default=0.0) - The marker lifetime in seconds. 0.0 equals infinite lifetime.
+
 
 
 .. _Configure:
