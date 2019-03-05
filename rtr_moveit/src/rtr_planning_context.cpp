@@ -177,13 +177,13 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
     }
   }
   if (visualization_enabled_)
-    visualizePlannerData(occupancy_data, waypoints, result.val == result.SUCCESS);
+    visualizePlanContext(occupancy_data, waypoints, result.val == result.SUCCESS);
 
   planning_time = (ros::Time::now() - start_time).toSec();
   return result;
 }
 
-void RTRPlanningContext::visualizePlannerData(const OccupancyData& occupancy_data,
+void RTRPlanningContext::visualizePlanContext(const OccupancyData& occupancy_data,
                                               const std::deque<std::size_t>& waypoint_ids, bool plan_success)
 {
   // visualize volume region

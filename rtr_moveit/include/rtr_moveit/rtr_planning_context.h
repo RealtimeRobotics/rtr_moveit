@@ -161,7 +161,7 @@ private:
    * @param waypoint_ids - The roadmap indices of the solution path
    * @param plan_success - If set to false, the solution path is not being visualized
    */
-  void visualizePlannerData(const OccupancyData& occupancy_data, const std::deque<std::size_t>& waypoint_ids,
+  void visualizePlanContext(const OccupancyData& occupancy_data, const std::deque<std::size_t>& waypoint_ids,
                             bool plan_success);
 
   robot_state::RobotStatePtr start_state_;

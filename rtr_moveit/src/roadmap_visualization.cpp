@@ -47,6 +47,7 @@ constexpr size_t ROADMAP_EDGES_ID = 1;
 constexpr size_t SOLUTION_PATH_ID = 2;
 constexpr size_t VOLUME_REGION_ID = 3;
 constexpr size_t VOXELS_ID = 4;
+
 RoadmapVisualization::RoadmapVisualization(const ros::NodeHandle& nh) : nh_(nh)
 {
   marker_lifetime_ = nh_.param("planner_config/visualization_marker_lifetime", 0.0);
@@ -78,7 +79,7 @@ void RoadmapVisualization::visualizeRoadmap(const std::string& frame_id, const g
     roadmap_states.points = state_positions;
     roadmap_states.action = visualization_msgs::Marker::ADD;
     roadmap_states.pose = marker_pose;
-    // States are green
+    // States are gray
     roadmap_states.color.a = 1.0;
     roadmap_states.color.r = 0.6;
     roadmap_states.color.g = 0.6;
@@ -97,7 +98,7 @@ void RoadmapVisualization::visualizeRoadmap(const std::string& frame_id, const g
       roadmap_edges.points = state_edges;
       roadmap_edges.action = visualization_msgs::Marker::ADD;
       roadmap_edges.pose = marker_pose;
-      // States are green
+      // State edges are green
       roadmap_edges.color.a = 0.9;
       roadmap_edges.color.g = 0.6;
       roadmap_edges.lifetime = ros::Duration(marker_lifetime_);
@@ -146,7 +147,6 @@ void RoadmapVisualization::visualizeVolumeRegion(const RoadmapVolume& volume)
   volume_marker.color.r = 1.0;
   volume_marker.color.g = 1.0;
   volume_marker.color.b = 1.0;
-  // lifetime is limited since we can't click through markers
   volume_marker.lifetime = ros::Duration(marker_lifetime_);
   marker_pub_.publish(volume_marker);
 }
