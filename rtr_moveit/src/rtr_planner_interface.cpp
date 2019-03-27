@@ -196,8 +196,6 @@ bool RTRPlannerInterface::solve(const RoadmapSpecification& roadmap_spec, const 
       bool check_scene_success = false;
       if (occupancy_data.type == OccupancyData::Type::POINT_CLOUD)
         check_scene_success = rapidplan_interface_.CheckScene(occupancy_data.point_cloud, roadmap_index, collisions);
-      else if (occupancy_data.type == OccupancyData::Type::BOXES)
-        check_scene_success = rapidplan_interface_.CheckScene(occupancy_data.boxes, roadmap_index, collisions);
       else if (occupancy_data.type == OccupancyData::Type::VOXELS)
         check_scene_success = rapidplan_interface_.CheckScene(occupancy_data.voxels, roadmap_index, collisions);
       else
