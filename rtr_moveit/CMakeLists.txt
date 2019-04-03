@@ -133,13 +133,13 @@ install(
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
 
-  # add_rostest_gtest(rtr_conversions_test
-  #   test/rtr_conversions.test
-  #   test/rtr_conversions_test.cpp)
-  # target_link_libraries(rtr_conversions_test
-  #   ${PROJECT_NAME}
-  #   ${catkin_LIBRARIES}
-  # )
+  add_rostest_gtest(rtr_conversions_test
+    test/rtr_conversions.test
+    test/rtr_conversions_test.cpp)
+  target_link_libraries(rtr_conversions_test
+    ${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+  )
 
   if(NOT CATKIN_DISABLE_HARDWARE_TEST)
     add_rostest_gtest(rapidplan_test

@@ -65,6 +65,8 @@
 // not impair the results.
 TEST(TestSuite, convertPlanningScene)
 {
+  ros::NodeHandle nh;
+
   // instantiate emtpy planning scene
   urdf::ModelInterfaceSharedPtr urdf_model;
   urdf_model.reset(new urdf::ModelInterface());
@@ -87,7 +89,7 @@ TEST(TestSuite, convertPlanningScene)
   volume.voxel_resolution[2] = 10;
 
   // convert planning scene object to voxels
-  rtr_moveit::OccupancyHandler occupancy_handler;
+  rtr_moveit::OccupancyHandler occupancy_handler(nh);
   occupancy_handler.setVolumeRegion(volume);
   rtr_moveit::OccupancyData occupancy;
   occupancy_handler.fromPlanningScene(scene, occupancy);
