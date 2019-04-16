@@ -2,7 +2,7 @@
 
 Description: A MoveIt! planning plugin for [Realtime Robotics](http://rtr.ai/)'s RapidPlan.
 
-<img src="https://picknik.ai/images/logo.jpg" width="100">
+<img src="https://picknik.ai/assets/images/logo.jpg" width="100">
 
 Developed by Henning Kayser at [PickNik Consulting](http://picknik.ai/)
 
