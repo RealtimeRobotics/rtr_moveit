@@ -12,6 +12,7 @@ add_definitions(-W -Wall -Wextra
 
 # Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
+  eigen_conversions
   geometry_msgs
   moveit_core
   moveit_msgs
@@ -37,6 +38,7 @@ find_package(Eigen3 REQUIRED)
 ###################################
 catkin_package(
   CATKIN_DEPENDS
+    eigen_conversions
     moveit_core
     pluginlib
     roscpp
