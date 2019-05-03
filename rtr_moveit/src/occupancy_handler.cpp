@@ -166,13 +166,15 @@ bool OccupancyHandler::fromPlanningScene(const planning_scene::PlanningSceneCons
 
   // x/y/z translation steps, since relative movements are more efficient than repositioning the object
   auto volume_orientation = world_to_volume.rotation();
-  auto x_step(volume_orientation * Eigen::Translation3d(x_voxel_dimension, 0, 0));
-  auto y_step(volume_orientation * Eigen::Translation3d(0, y_voxel_dimension, 0));
-  auto z_step(volume_orientation * Eigen::Translation3d(0, 0, z_voxel_dimension));
+  auto x_step(volume_orientation * decltype(world_to_volume)(Eigen::Translation3d(x_voxel_dimension, 0, 0)));
+  auto y_step(volume_orientation * decltype(world_to_volume)(Eigen::Translation3d(0, y_voxel_dimension, 0)));
+  auto z_step(volume_orientation * decltype(world_to_volume)(Eigen::Translation3d(0, 0, z_voxel_dimension)));
 
   // x/y reset transforms
-  auto y_reset(volume_orientation * Eigen::Translation3d(0, -y_voxels * y_voxel_dimension, 0));
-  auto z_reset(volume_orientation * Eigen::Translation3d(0, 0, -z_voxels * z_voxel_dimension));
+  auto y_reset(volume_orientation *
+               decltype(world_to_volume)(Eigen::Translation3d(0, -y_voxels * y_voxel_dimension, 0)));
+  auto z_reset(volume_orientation *
+               decltype(world_to_volume)(Eigen::Translation3d(0, 0, -z_voxels * z_voxel_dimension)));
 
   // Loop over X/Y/Z voxel positions and check for box collisions in the collision scene
   // NOTE: This implementation is a prototype and will be replaced by more efficient methods as described below
