@@ -30,19 +30,10 @@ These instructions assume you are running on Ubuntu 16.04:
 
         sudo apt-get install python-wstool python-catkin-tools
 
-1. Install RapidPlan dependencies:
+1. Download and Install RapidPlan + RapidSense from the RTR support site:
 
-> Note: RapidPlan is not released yet. All dependencies are installed from [this](https://drive.google.com/uc?id=1X6suaBlgbfmOzGF2sXNSuyOLPkid484R) encrypted binary shell script.
-
-        sudo apt-get install tar mcrypt python-pip
-        pip install --user gdown
-        gdown https://drive.google.com/uc?id=1X6suaBlgbfmOzGF2sXNSuyOLPkid484R
-        cat rtr_0.1.2-133.tar.gz.crypt | crypt "super secret picknik pass" -d > rtr_0.1.2-133.tar.gz
-        tar xfz rtr_0.1.2-133.tar.gz
-        sudo bash rtr_0.1.2-133/rtr_0.1.2-133.deb.run
-        sudo cp rtr_0.1.2-133/RapidPlanDataTypes.hpp /opt/ros/kinetic/include/rtr-api/
-
-> Note: you may need to uninstall older versions of RapidPlan, which you can do via ``sudo apt remove rtr* ros-kinetic-rtr*``
+        https://support.rtr.ai
+        https://docs.rtr.ai/_source/Installation.html#installation
 
 1. Re-use or create a catkin workspace:
 
