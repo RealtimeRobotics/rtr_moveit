@@ -59,10 +59,6 @@ These instructions assume you are running on Ubuntu 16.04:
 
         source devel/setup.bash
 
-## Run
-
-See the [rtr_moveit tutorial](https://github.com/RealtimeRobotics/rtr_moveit/blob/master/rtr_moveit_tutorial/rtr_moveit_tutorial.rst) on how to configure and run this plugin.
-
 ## Developers: Quick update code repositories
 
 To make sure you have the latest repos:
