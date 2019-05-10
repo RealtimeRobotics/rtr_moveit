@@ -26,7 +26,7 @@ Goal Constraints
 
 Goal states can be defined as arbitrary combinations of Joint-, Position- and Orientation constraints.
 Since start and goal states are unlikely to be part of the roadmap the plugin attempts to solve for nearby state candidates and connect the endings afterwards.
-This is done by linear interpolation and collision checking using the planning scene in *MoveIt!*.
+This is done by linear interpolation and collision checking using the planning scene in *MoveIt*.
 The allowed distance of start and goal state candidates is defined by the parameter ``allowed_joint_distance`` and ``allowed_position_distance``.
 The waypoint distance that should be used for collision checking in the planning scene is defined by ``max_waypoint_distance``.
 RapidPlan also supports solving for multiple goal states at the same time, the maximum number is defined by ``max_goal_states``.
@@ -50,14 +50,14 @@ The marker lifetime is configured by setting ``visualization_marker_lifetime`` t
 Setup The Plugin
 ----------------
 
-You need a working *MoveIt!* setup which we reference from now on with ``<your_moveit_setup>``.
+You need a working *MoveIt* setup which we reference from now on with ``<your_moveit_setup>``.
 If you don't have a setup you can also use `Franka Emika's Panda Config <https://github.com/ros-planning/panda_moveit_config>`_.
 Make sure to replace all references with the actual package name.
 
 Create a file ``<your_moveit_setup>/launch/rtr_planning_pipeline.launch.xml`` with the following content::
 
   <launch>
-    <!-- RapidPlan Plugin for MoveIt! -->
+    <!-- RapidPlan Plugin for MoveIt -->
     <arg name="planning_plugin" value="rtr_moveit/RTRPlanner" />
   
     <!-- The request adapters (plugins) used when planning with RapidPlan. ORDER MATTERS -->
@@ -91,6 +91,45 @@ Change the ``move_group`` parameter ``pipeline`` in your ``move_group.launch`` t
 Create the file ``<your_moveit_setup>/config/rtr_planning.yaml`` and configure roadmap and planner parameters.
 You can use this rtr_planning.yaml_ template and follow the instructions below for adding your own generated roadmaps.
 
+Generate Roadmaps with Panda
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Due to the joint redundancy of the Panda there are some points that need to be considered when generating roadmaps.
+Roadmaps can be generated for the full robot ``panda_arm_hand.urdf.xacro`` or only the arm without gripper ``panda_arm.urdf.xacro``.
+Start with converting the corresponding XACRO file to URDF by running::
+
+    rosrun xacro xacro --inorder panda_arm_hand.urdf.xacro > panda_arm_hand.urdf
+
+When using the ``panda_arm_hand.urdf.xacro`` the finger joint types need to be set to 'fixed' or otherwise the rtr-toolkit won't be able to load the urdf.
+Follow the instructions on https://rtr.ai/support to configure voxel region and roadmap states.
+When creating the new project set the "Kinematic Chain End" to ``panda_link8``.
+
+Keep in mind that the roadmap must be reachable when launching the robot.
+For starters simply set the origin pose to the same joint configuration as the 'ready' state from the file ``<your_moveit_setup>/config/panda_arm_hand.srdf.xacro``.
+Alternatively, you can also add your desired origin pose to the SRDF file and use it as start state by modifying the `initial_pose` parameter inside ``<your_moveit_setup>/config/fake_controllers.yaml``.
+
+After the .og file is generated, create a subdirectory ``<your_moveit_setup>/roadmaps`` and copy the file into it.
+Specify the roadmap to use for the planning group ``panda_arm`` inside ``rtr_planning.yaml`` like below::
+
+    default:
+      roadmaps_package: panda_moveit_config
+      roadmaps_directory: roadmaps
+    panda_arm:
+      default: <your_og_file>
+
+More instructions on how to store and specify roadmap files can be found in the "Roadmap Configuration" section.
+
+Now you can launch the Panda demo::
+
+    roslaunch panda_moveit_config demo.launch
+
+Open the MoveIt MotionPlanning panel in RViz and select the planning group 'panda_arm' in the PlanningRequest menu.
+You should be able to select your named roadmap in the dropdown from within the MotionPlanning context view.
+Try dragging the end effector around and run plans as usual.
+If too many planning attempts fail the reason is probably that no roadmap state is close enough to the goal state.
+Simply increase the parameter ``allowed_joint_distance`` or try a bigger roadmap with higher density.
+More descriptions about available parameters can be found in the next section.
+
 Planner Parameters
 ^^^^^^^^^^^^^^^^^^
 
@@ -117,7 +156,6 @@ Planner parameters are defined under the namespace ``move_group/planner_config``
 **visualization_marker_topic** (string, default=/rapidplan_visualization_markers) - The visualization marker topic.
 
 **visualization_marker_lifetime** (float, default=0.0) - The marker lifetime in seconds. 0.0 equals infinite lifetime.
-
 
 
 .. _Configure:
