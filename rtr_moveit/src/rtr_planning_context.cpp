@@ -59,7 +59,6 @@
 // rtr_moveit
 #include <rtr_moveit/rtr_planning_context.h>
 #include <rtr_moveit/rtr_planner_interface.h>
-#include <rtr_moveit/occupancy_handler.h>
 #include <rtr_moveit/roadmap_search.h>
 #include <rtr_moveit/roadmap_visualization.h>
 
@@ -79,11 +78,10 @@ RTRPlanningContext::RTRPlanningContext(const std::string& planning_group, const 
 {
 }
 
-moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotTrajectoryPtr& trajectory,
-                                                        double& planning_time)
+moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotTrajectoryPtr& trajectory)
 {
-  ros::Time start_time = ros::Time::now();
-  terminate_plan_time_ = start_time + ros::Duration(request_.allowed_planning_time);
+  start_time_ = ros::Time::now();
+  terminate_plan_time_ = start_time_ + ros::Duration(request_.allowed_planning_time);
   moveit_msgs::MoveItErrorCodes result;
   result.val = result.FAILURE;
 
@@ -95,28 +93,29 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
   }
 
   // extract RapidPlanGoals;
+  addDetailedTime("init goal states", start_time_);
   if (!initRapidPlanGoals(request_.goal_constraints, goals_))
     return result;
 
   // prepare collision scene
-  bool occupancy_success;
+  addDetailedTime("generate occupancy", ros::Time::now());
   OccupancyData occupancy_data;
-  ros::NodeHandle nh("~");
-  OccupancyHandler occupancy_handler(nh);
-  occupancy_handler.setVolumeRegion(roadmap_.volume);
+  bool occupancy_success;
   if (occupancy_source_ == "POINT_CLOUD")
-    occupancy_success = occupancy_handler.fromPointCloud(pcl_topic_, occupancy_data);
+    occupancy_success = occupancy_handler_->fromPointCloud(occupancy_data, getRemainingPlanningTime());
   else
-    occupancy_success = occupancy_handler.fromPlanningScene(planning_scene_, occupancy_data);
+    occupancy_success = occupancy_handler_->fromPlanningScene(planning_scene_, occupancy_data);
   if (!occupancy_success)
     return result;
 
   // initialize start state
+  addDetailedTime("init start state", ros::Time::now());
   std::size_t start_state_id;
   if (!initStartState(start_state_id))
     return result;
 
   // Iterate goals and plan until we have a solution
+  addDetailedTime("plan", ros::Time::now());
   result.val = result.PLANNING_FAILED;
   std::vector<rtr::Config> states;
   std::deque<std::size_t> waypoints;
@@ -124,13 +123,12 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
   for (std::size_t goal_pos = 0; goal_pos < goals_.size(); goal_pos++)
   {
     // check time
-    double timeout = (terminate_plan_time_ - ros::Time::now()).toSec() * 1000;  // seconds -> milliseconds
+    double timeout = getRemainingPlanningTime() * 1000;  // seconds -> milliseconds
     if (timeout <= 0.0)
     {
       result.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
       break;
     }
-
     // run plan
     const RapidPlanGoal& goal = goals_[goal_pos];
     states.clear();
@@ -150,6 +148,7 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
         solution_path.push_back(roadmap_configs_[waypoint]);
 
       // convert solution path to robot trajectory
+      ros::Time process_solution_time = ros::Time::now();
       const robot_state::RobotState& reference_state = planning_scene_->getCurrentState();
       trajectory.reset(new robot_trajectory::RobotTrajectory(reference_state.getRobotModel(), group_));
       processSolutionPath(solution_path, reference_state, joint_model_names_, *trajectory);
@@ -170,16 +169,15 @@ moveit_msgs::MoveItErrorCodes RTRPlanningContext::solve(robot_trajectory::RobotT
           continue;
         }
       }
-
       // plan successful
+      addDetailedTime("process solution", process_solution_time);
       result.val = result.SUCCESS;
       break;
     }
   }
   if (visualization_enabled_)
     visualizePlanContext(occupancy_data, waypoints, result.val == result.SUCCESS);
-
-  planning_time = (ros::Time::now() - start_time).toSec();
+  addDetailedTime("done", ros::Time::now());
   return result;
 }
 
@@ -234,17 +232,26 @@ void RTRPlanningContext::visualizePlanContext(const OccupancyData& occupancy_dat
 
 bool RTRPlanningContext::solve(planning_interface::MotionPlanResponse& res)
 {
-  res.error_code_ = solve(res.trajectory_, res.planning_time_);
+  use_detailed_times_ = false;
+  res.error_code_ = solve(res.trajectory_);
+  res.planning_time_ = (ros::Time::now() - start_time_).toSec();
   return res.error_code_.val == res.error_code_.SUCCESS;
 }
 
 bool RTRPlanningContext::solve(planning_interface::MotionPlanDetailedResponse& res)
 {
+  use_detailed_times_ = true;
+  detailed_times_.clear();
   res.trajectory_.resize(res.trajectory_.size() + 1);
-  res.processing_time_.resize(res.processing_time_.size() + 1);
-  res.error_code_ = solve(res.trajectory_.back(), res.processing_time_.back());
-  res.description_.push_back("plan");
-  // TODO(henningkayser): add more detailed descriptions for planning steps
+  // solve
+  res.error_code_ = solve(res.trajectory_.back());
+  // fill detailed planning steps and durations
+  for (std::size_t i = 0; i < detailed_times_.size() - 1; ++i)
+  {
+    double processing_time = (detailed_times_[i + 1].second - detailed_times_[i].second).toSec();
+    res.processing_time_.push_back(processing_time);       // time in seconds
+    res.description_.push_back(detailed_times_[i].first);  // description
+  }
   return res.error_code_.val == res.error_code_.SUCCESS;
 }
 
@@ -276,7 +283,7 @@ bool RTRPlanningContext::connectWaypointToTrajectory(const robot_trajectory::Rob
   double waypoint_distance = connecting_state.distance(*waypoint_state);
   std::size_t step_count = std::abs(waypoint_distance / max_waypoint_distance_) + 1;
   double step_fraction = 1.0 / step_count;
-  for (std::size_t step = 0; step <= step_count; step++)
+  for (std::size_t step = 0; step <= step_count; ++step)
   {
     connecting_state.interpolate(*waypoint_state, step * step_fraction, intermediate_state);
     if (planning_scene_->isStateColliding(intermediate_state))
@@ -402,6 +409,8 @@ void RTRPlanningContext::configure(moveit_msgs::MoveItErrorCodes& error_code)
     return;
   }
 
+  occupancy_handler_->setVolumeRegion(roadmap_.volume);
+
   // done
   error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
   configured_ = true;
@@ -524,6 +533,22 @@ bool RTRPlanningContext::initStartState(std::size_t& start_state_id)
     ROS_ERROR_NAMED(LOGNAME, "Unable to find a start state candidate in the roadmap within the allowed joint distance");
   start_state_id = result_id;
   return result_id >= 0;
+}
+
+void RTRPlanningContext::addDetailedTime(const std::string& description, const ros::Time& time)
+{
+  if (use_detailed_times_)
+    detailed_times_.push_back(std::make_pair(description, time));
+}
+
+double RTRPlanningContext::getRemainingPlanningTime()
+{
+  return (terminate_plan_time_ - ros::Time::now()).toSec();
+}
+
+void RTRPlanningContext::setOccupancyHandler(std::shared_ptr<OccupancyHandler> occupancy_handler)
+{
+  occupancy_handler_ = occupancy_handler;
 }
 
 void RTRPlanningContext::clear()
