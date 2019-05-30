@@ -1,0 +1,369 @@
+<robot name="rtr_ur5">
+    <material name="LightGrey">
+        <texture />
+        <color rgba="0.7 0.7 0.7 1" />
+    </material>
+    <material name="black">
+        <texture />
+        <color rgba="0 0 0 1" />
+    </material>
+    <material name="brown">
+        <texture />
+        <color rgba="0.5 0.25 0.01 1" />
+    </material>
+    <material name="green">
+        <texture />
+        <color rgba="0 0.8 0 0.8" />
+    </material>
+    <material name="red">
+        <texture />
+        <color rgba="0.8 0 0 0.8" />
+    </material>
+    <material name="white">
+        <texture />
+        <color rgba="1 1 1 1" />
+    </material>
+    <link name="adapter_plate">
+        <visual>
+            <origin xyz="0 0 0.007" rpy="0 -0 0" />
+            <geometry>
+                <cylinder radius="0.04" length="0.014" />
+            </geometry>
+            <material name="black">
+                <texture />
+                <color rgba="0 0 0 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.007" rpy="0 -0 0" />
+            <geometry>
+                <cylinder radius="0.04" length="0.014" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="base_link">
+        <inertial>
+            <mass value="4" />
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <inertia ixx="0.00443333" ixy="0" ixz="0" iyy="0.00443333" iyz="0" izz="0.0072" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/base.fea4-6e07-8059-e0b7.9e63-a713-60bf-043a.dae" scale="1 1 1" />
+            </geometry>
+            <material name="LightGrey">
+                <texture />
+                <color rgba="0.7 0.7 0.7 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/base.c0fd-a385-e6fd-ccf6.f608-13bc-f281-6fbd.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="cart">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <box size="0.4572 0.7112 0.885825" />
+            </geometry>
+            <material name="brown">
+                <texture />
+                <color rgba="0.5 0.25 0.01 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <box size="0.4572 0.7112 0.885825" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="forearm_link">
+        <inertial>
+            <mass value="2.275" />
+            <origin xyz="0 0 0.25" rpy="0 -0 0" />
+            <inertia ixx="0.0494433" ixy="0" ixz="0" iyy="0.0494433" iyz="0" izz="0.004095" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/forearm.d4c2-23a8-be71-3f8f.ab48-219e-e08a-18b1.dae" scale="1 1 1" />
+            </geometry>
+            <material name="LightGrey">
+                <texture />
+                <color rgba="0.7 0.7 0.7 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/forearm.9892-8bda-c6a5-81f8.c704-5660-ac09-0101.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="frame">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/frame.7a5f-ac4e-94ff-0444.bc9a-1d57-aebe-1979.dae" scale="1 1 1" />
+            </geometry>
+            <material name="black">
+                <texture />
+                <color rgba="0 0 0 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/frame.7a5f-ac4e-94ff-0444.bc9a-1d57-aebe-1979.dae" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="robotiq_85">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/gripper.161d-a4d0-265d-7d71.35aa-f943-8f07-c090.stl" scale="1 1 1" />
+            </geometry>
+            <material name="black">
+                <texture />
+                <color rgba="0 0 0 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/gripper.161d-a4d0-265d-7d71.35aa-f943-8f07-c090.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="shoulder_link">
+        <inertial>
+            <mass value="3.7" />
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <inertia ixx="0.0102675" ixy="0" ixz="0" iyy="0.0102675" iyz="0" izz="0.00666" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/shoulder.1ff4-3144-ce1d-33fb.3d43-7354-7889-0035.dae" scale="1 1 1" />
+            </geometry>
+            <material name="LightGrey">
+                <texture />
+                <color rgba="0.7 0.7 0.7 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/shoulder.0f61-0e12-5068-77bd.40f2-4783-006f-5f55.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="table">
+        <visual>
+            <origin xyz="0 0 -0.015" rpy="0 -0 0" />
+            <geometry>
+                <box size="0.75 2.25 0.03" />
+            </geometry>
+            <material name="white">
+                <texture />
+                <color rgba="1 1 1 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 -0.015" rpy="0 -0 0" />
+            <geometry>
+                <box size="0.75 2.25 0.03" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="tool0" />
+    <link name="upper_arm_link">
+        <inertial>
+            <mass value="8.393" />
+            <origin xyz="0 0 0.28" rpy="0 -0 0" />
+            <inertia ixx="0.226891" ixy="0" ixz="0" iyy="0.226891" iyz="0" izz="0.0151074" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/upperarm.4856-b9aa-5cc0-46ed.904b-2b53-40ff-3bd8.dae" scale="1 1 1" />
+            </geometry>
+            <material name="LightGrey">
+                <texture />
+                <color rgba="0.7 0.7 0.7 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/upperarm.072f-b376-a5f5-5a9b.8873-3a67-fae0-f1e5.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="world" />
+    <link name="wrist_1_link">
+        <inertial>
+            <mass value="1.219" />
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <inertia ixx="0.111173" ixy="0" ixz="0" iyy="0.111173" iyz="0" izz="0.21942" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/wrist1.cd81-123b-b31c-ce44.f8d7-a92a-f8d1-379b.dae" scale="1 1 1" />
+            </geometry>
+            <material name="LightGrey">
+                <texture />
+                <color rgba="0.7 0.7 0.7 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/wrist1.f1b9-bf3a-096a-681e.ea1d-1880-edac-4cd8.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="wrist_2_link">
+        <inertial>
+            <mass value="1.219" />
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <inertia ixx="0.111173" ixy="0" ixz="0" iyy="0.111173" iyz="0" izz="0.21942" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/wrist2.b186-9a5f-9908-1494.95de-f15f-8b96-3668.dae" scale="1 1 1" />
+            </geometry>
+            <material name="LightGrey">
+                <texture />
+                <color rgba="0.7 0.7 0.7 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/wrist2.c325-8bc2-1fe2-1684.299e-00bc-c74a-603a.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="wrist_3_link">
+        <inertial>
+            <mass value="0.1879" />
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <inertia ixx="0.0171365" ixy="0" ixz="0" iyy="0.0171365" iyz="0" izz="0.033822" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/wrist3.8101-1ca5-95f3-afe3.23c7-d34c-b9a4-76c6.dae" scale="1 1 1" />
+            </geometry>
+            <material name="LightGrey">
+                <texture />
+                <color rgba="0.7 0.7 0.7 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/wrist3.cbbf-3f32-cec7-b05e.7e9a-6b49-4ffc-5ead.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="cart_to_base_link" type="fixed">
+        <origin xyz="0.112712 0 0.442912" rpy="0 -0 0" />
+        <axis xyz="0 0 0" />
+        <parent link="cart" />
+        <child link="base_link" />
+    </joint>
+    <joint name="elbow_joint" type="revolute">
+        <origin xyz="0 -0.1197 0.425" rpy="0 -0 0" />
+        <axis xyz="0 1 0" />
+        <parent link="upper_arm_link" />
+        <child link="forearm_link" />
+        <dynamics damping="0" friction="0" />
+        <limit effort="150" velocity="3.15" lower="0" upper="3.14159" />
+    </joint>
+    <joint name="plate_to_gripper" type="fixed">
+        <origin xyz="0 0 0.014" rpy="0 -0 0" />
+        <axis xyz="0 0 0" />
+        <parent link="adapter_plate" />
+        <child link="robotiq_85" />
+    </joint>
+    <joint name="shoulder_lift_joint" type="revolute">
+        <origin xyz="0 0.13585 0" rpy="0 1.5708 -0" />
+        <axis xyz="0 1 0" />
+        <parent link="shoulder_link" />
+        <child link="upper_arm_link" />
+        <dynamics damping="0" friction="0" />
+        <limit effort="150" velocity="3.15" lower="-2.35619" upper="0" />
+    </joint>
+    <joint name="shoulder_pan_joint" type="revolute">
+        <origin xyz="0 0 0.089159" rpy="0 -0 0" />
+        <axis xyz="0 0 1" />
+        <parent link="base_link" />
+        <child link="shoulder_link" />
+        <dynamics damping="0" friction="0" />
+        <limit effort="150" velocity="3.15" lower="-1.57" upper="1.57" />
+    </joint>
+    <joint name="world_to_cart_base" type="fixed">
+        <origin xyz="-0.2286 0 0.442912" rpy="0 -0 0" />
+        <axis xyz="0 0 0" />
+        <parent link="world" />
+        <child link="cart" />
+    </joint>
+    <joint name="world_to_frame" type="fixed">
+        <origin xyz="1 -1.25 0" rpy="0 -0 1.5708" />
+        <axis xyz="0 0 0" />
+        <parent link="world" />
+        <child link="frame" />
+    </joint>
+    <joint name="world_to_table" type="fixed">
+        <origin xyz="0.5 0 0.92075" rpy="0 -0 0" />
+        <axis xyz="0 0 0" />
+        <parent link="world" />
+        <child link="table" />
+    </joint>
+    <joint name="wrist_1_joint" type="revolute">
+        <origin xyz="0 0 0.39225" rpy="0 1.5708 -0" />
+        <axis xyz="0 1 0" />
+        <parent link="forearm_link" />
+        <child link="wrist_1_link" />
+        <dynamics damping="0" friction="0" />
+        <limit effort="28" velocity="3.2" lower="3.92699" upper="5.49779" />
+    </joint>
+    <joint name="wrist_2_joint" type="revolute">
+        <origin xyz="0 0.093 0" rpy="0 -0 0" />
+        <axis xyz="0 0 1" />
+        <parent link="wrist_1_link" />
+        <child link="wrist_2_link" />
+        <dynamics damping="0" friction="0" />
+        <limit effort="28" velocity="3.2" lower="-2.35619" upper="-0.785398" />
+    </joint>
+    <joint name="wrist_3_joint" type="revolute">
+        <origin xyz="0 0 0.09465" rpy="0 -0 0" />
+        <axis xyz="0 1 0" />
+        <parent link="wrist_2_link" />
+        <child link="wrist_3_link" />
+        <dynamics damping="0" friction="0" />
+        <limit effort="28" velocity="3.2" lower="-3.14159" upper="3.14159" />
+    </joint>
+    <joint name="wrist_3_link-tool0_fixed_joint" type="fixed">
+        <origin xyz="0 0.0823 0" rpy="-1.5708 0 0" />
+        <axis xyz="0 0 0" />
+        <parent link="wrist_3_link" />
+        <child link="tool0" />
+    </joint>
+    <joint name="wrist_to_adapter_plate" type="fixed">
+        <origin xyz="0 0 -0.01" rpy="0 -0 0" />
+        <axis xyz="0 0 0" />
+        <parent link="tool0" />
+        <child link="adapter_plate" />
+    </joint>
+</robot>

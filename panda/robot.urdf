@@ -1,0 +1,177 @@
+<robot name="panda">
+    <link name="panda_link0">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link0.f2be-ce1f-05d6-e66e.dae" scale="1 1 1" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link0.af9b-2457-37cf-8209.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="panda_link1">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link1.8dce-e794-10ec-f29a.dae" scale="1 1 1" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link1.ac38-d6c2-617c-13d1.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="panda_link2">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link2.cf9c-82a8-20b2-8da9.dae" scale="1 1 1" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link2.8adc-c68f-58ee-8e47.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="panda_link3">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link3.5774-1aff-5b98-7258.dae" scale="1 1 1" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link3.bd49-b903-b5ea-0bb5.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="panda_link4">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link4.d407-9810-d083-72a6.dae" scale="1 1 1" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link4.36d2-12c5-d354-c37d.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="panda_link5">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link5.4b5d-1747-6059-3e99.dae" scale="1 1 1" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link5.4dca-c44e-1ead-e563.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="panda_link6">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link6.d81b-f518-acbf-7034.dae" scale="1 1 1" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link6.eca0-635e-20d4-9078.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="panda_link7">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link7.228b-4c7b-7c72-e1bf.dae" scale="1 1 1" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="meshdata/link7.4be1-66bc-d8b0-54b2.stl" scale="1 1 1" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="panda_link8" />
+    <joint name="panda_joint1" type="revolute">
+        <origin xyz="0 0 0.333" rpy="0 -0 0" />
+        <axis xyz="0 0 1" />
+        <parent link="panda_link0" />
+        <child link="panda_link1" />
+        <limit effort="87" velocity="2.175" lower="-2.8973" upper="2.8973" />
+        <safety_controller k_position="100" k_velocity="40" soft_lower_limit="-2.8973" soft_upper_limit="2.8973" />
+    </joint>
+    <joint name="panda_joint2" type="revolute">
+        <origin xyz="0 0 0" rpy="-1.5708 0 0" />
+        <axis xyz="0 0 1" />
+        <parent link="panda_link1" />
+        <child link="panda_link2" />
+        <limit effort="87" velocity="2.175" lower="-1.7628" upper="1.7628" />
+        <safety_controller k_position="100" k_velocity="40" soft_lower_limit="-1.7628" soft_upper_limit="1.7628" />
+    </joint>
+    <joint name="panda_joint3" type="revolute">
+        <origin xyz="0 -0.316 0" rpy="1.5708 -0 0" />
+        <axis xyz="0 0 1" />
+        <parent link="panda_link2" />
+        <child link="panda_link3" />
+        <limit effort="87" velocity="2.175" lower="-2.8973" upper="2.8973" />
+        <safety_controller k_position="100" k_velocity="40" soft_lower_limit="-2.8973" soft_upper_limit="2.8973" />
+    </joint>
+    <joint name="panda_joint4" type="revolute">
+        <origin xyz="0.0825 0 0" rpy="1.5708 -0 0" />
+        <axis xyz="0 0 1" />
+        <parent link="panda_link3" />
+        <child link="panda_link4" />
+        <limit effort="87" velocity="2.175" lower="-3.0718" upper="-0.0698" />
+        <safety_controller k_position="100" k_velocity="40" soft_lower_limit="-3.0718" soft_upper_limit="-0.0698" />
+    </joint>
+    <joint name="panda_joint5" type="revolute">
+        <origin xyz="-0.0825 0.384 0" rpy="-1.5708 0 0" />
+        <axis xyz="0 0 1" />
+        <parent link="panda_link4" />
+        <child link="panda_link5" />
+        <limit effort="12" velocity="2.61" lower="-2.8973" upper="2.8973" />
+        <safety_controller k_position="100" k_velocity="40" soft_lower_limit="-2.8973" soft_upper_limit="2.8973" />
+    </joint>
+    <joint name="panda_joint6" type="revolute">
+        <origin xyz="0 0 0" rpy="1.5708 -0 0" />
+        <axis xyz="0 0 1" />
+        <parent link="panda_link5" />
+        <child link="panda_link6" />
+        <limit effort="12" velocity="2.61" lower="-0.0175" upper="3.7525" />
+        <safety_controller k_position="100" k_velocity="40" soft_lower_limit="-0.0175" soft_upper_limit="3.7525" />
+    </joint>
+    <joint name="panda_joint7" type="revolute">
+        <origin xyz="0.088 0 0" rpy="1.5708 -0 0" />
+        <axis xyz="0 0 1" />
+        <parent link="panda_link6" />
+        <child link="panda_link7" />
+        <limit effort="12" velocity="2.61" lower="-2.8973" upper="2.8973" />
+        <safety_controller k_position="100" k_velocity="40" soft_lower_limit="-2.8973" soft_upper_limit="2.8973" />
+    </joint>
+    <joint name="panda_joint8" type="fixed">
+        <origin xyz="0 0 0.107" rpy="0 -0 0" />
+        <axis xyz="0 0 0" />
+        <parent link="panda_link7" />
+        <child link="panda_link8" />
+    </joint>
+</robot>
